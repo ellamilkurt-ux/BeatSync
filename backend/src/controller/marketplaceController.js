@@ -74,7 +74,7 @@ const addToCart = async (req, res) => {
         return res.status(500).json({ message: 'Server error while adding to cart.' });
     }
 };
-
+// for changes
 // ─────────────────────────────────────────────
 // POST /api/marketplace/wishlist
 // Inserts a row into interactions (type: 'wishlist').
