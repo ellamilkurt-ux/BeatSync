@@ -1,0 +1,187 @@
+=========================================
+### BACKEND CONTROLLERS & FUNCTIONS
+=========================================
+
+---
+#### Auth Controller
+---
+
+userRegister
+The userRegister function registers a new user in the PostgreSQL database. It validates that the username, email, and password are provided, checks that the password is at least 6 characters long, normalizes and validates the email, ensures the email is not already taken, hashes the password using bcrypt, inserts the record with the user's role, generates a JWT token, and sends it back in both an HTTP-only cookie and the JSON response.
+
+userLogin
+The userLogin function authenticates an existing user. It validates that the email and password are provided, normalizes the email, retrieves the matching user record from the database, compares the submitted password with the stored bcrypt hash, generates a JWT token, and sends it back in both an HTTP-only cookie and the JSON response.
+
+userProfile
+The userProfile function retrieves the logged-in user's profile details. It simply returns the authenticated user's credentials and details that were pre-loaded onto the request object by the verifyToken middleware.
+
+userLogout
+The userLogout function signs out the authenticated user. It clears the token cookie on the client's browser by setting its expiration date to the past and returns a success message.
+
+updateProfile
+The updateProfile function updates the username and email of the logged-in user. It validates that the submitted fields are not empty, executes an UPDATE query, and returns a success response while handling database duplicate errors for taken names or emails.
+
+changePassword
+The changePassword function updates the user's password. It validates that the new password is at least 6 characters, retrieves the user's current password hash, compares it with the submitted current password, hashes the new password with bcrypt, and updates the database record.
+
+addCredits
+The addCredits function increases the user's credit balance. It validates that the top-up amount is a positive number below the maximum credit limit, updates the user's credits column in the database, and returns a success message.
+
+forgotPassword
+The forgotPassword function resets a user's password. It checks that the email, username, and new password are provided, checks the password length, applies an IP-based rate limiter to prevent abuse, checks that the username and email match an existing user, hashes the new password, and updates the user's record.
+
+---
+#### Track Controller
+---
+
+getAllTracks
+The getAllTracks function retrieves all tracks in the database catalog. It runs a SELECT query with a LEFT JOIN on the reviews table, grouping by track ID to compute and return average ratings and review counts along with track metadata and artist names, sorted by creation date.
+
+uploadTrack
+The uploadTrack function inserts a new track into the catalog. It verifies that the user is an artist or admin, checks that the title, genre, price, and file URL are provided, verifies that a track with the same title does not already exist for that artist, inserts the track into the database, and returns the created track record.
+
+streamTrack
+The streamTrack function retrieves the stream URL of a track. It queries the database for the track with the specified ID and returns its file URL.
+
+buyTrack
+The buyTrack function purchases a track for a user. It retrieves the track's details, ensures the buyer does not own the track, checks that the user has not already purchased the track, generates a unique transaction ID, inserts a paid order record into the database, and returns a secure download token.
+
+reactToTrack
+The reactToTrack function logs a user's reaction to a track. It validates the reaction type, checks that the track exists, inserts a new interaction record using an ON CONFLICT DO NOTHING clause to prevent duplicate entries, and returns the reaction.
+
+getTrackReviews
+The getTrackReviews function retrieves all reviews for a track. It runs a SELECT query joining the reviews and users tables to return all review comments, ratings, and reviewer usernames for a specific track ID, sorted by creation date.
+
+addTrackReview
+The addTrackReview function creates a new review for a track. It validates that the rating is between 1 and 5, checks that the comment is not empty, inserts a new review record into the database, and returns the review along with the reviewer's username.
+
+updateTrack
+The updateTrack function updates a track's metadata. It checks that the track exists, ensures the user is an admin or the track's creator, updates the track's title, genre, and price in the database, and returns a success response.
+
+deleteTrack
+The deleteTrack function deletes a track from the catalog. It checks that the track exists, ensures the user is an admin or the track's creator, deletes the track from the database, and returns a success response.
+
+getPurchasedTracks
+The getPurchasedTracks function retrieves a user's purchased tracks. It queries the orders table for all paid orders belonging to the authenticated user, joins the tracks and users tables to fetch metadata and artist names, and returns the list of purchased tracks.
+
+getArtistSales
+The getArtistSales function retrieves an artist's sales performance metrics. It checks that the user is an artist or admin, queries the orders table for paid transactions on the artist's tracks, joins the tracks and users tables to retrieve track titles and buyer names, and returns the sales transactions list.
+
+---
+#### Marketplace Controller
+---
+
+addToCart
+The addToCart function adds a track to the user's shopping cart. It verifies the track exists, checks that the track is not already in the cart, checks that the user has not already purchased the track, inserts a cart interaction record into the database, and returns the cart item.
+
+addToWishlist
+The addToWishlist function adds a track to the user's wishlist. It verifies the track exists, checks that the track is not already in the wishlist, inserts a wishlist interaction record into the database, and returns the wishlist item.
+
+processPayment
+The processPayment function checkouts the user's cart. It runs inside a database transaction block, locks the track row, ensures the user does not own the track and has not purchased it, inserts a paid order record, deletes the cart interaction record, commits the transaction, and returns a secure download token.
+
+getCart
+The getCart function retrieves the user's cart items. It queries the interactions table for active cart records belonging to the user, joins the tracks and users tables to fetch track metadata and artist names, and returns the cart list.
+
+removeFromCart
+The removeFromCart function removes a track from the user's cart. It deletes the cart interaction record matching the user's ID and track ID.
+
+getWishlist
+The getWishlist function retrieves the user's wishlist items. It queries the interactions table for wishlist records belonging to the user, joins the tracks and users tables to fetch track metadata and artist names, and returns the wishlist list.
+
+removeFromWishlist
+The removeFromWishlist function removes a track from the user's wishlist. It deletes the wishlist interaction record matching the user's ID and track ID.
+
+
+=========================================
+### FRONTEND COMPONENTS & VIEWS
+=========================================
+
+---
+#### App Component (App.jsx)
+---
+
+fetchTracks
+The fetchTracks function fetches all tracks from the database backend API, maps database price decimals to formatted currency strings, resolves seeded track file paths to local asset imports, and stores the resulting array in the global tracks state.
+
+fetchCart
+The fetchCart function retrieves the user's active shopping cart items from the database API using their JWT bearer token, maps prices to formatted strings, and stores them in the cartItems React state.
+
+fetchWishlist
+The fetchWishlist function retrieves the user's saved wishlist items from the database API using their JWT bearer token, maps prices to formatted strings, and stores them in the wishlistItems React state.
+
+fetchPurchaseHistory
+The fetchPurchaseHistory function fetches the user's purchased beats history from the database, maps prices and dates, and stores them in the purchaseHistory React state.
+
+handleAddToCart
+The handleAddToCart function adds a track to the database shopping cart by calling the cart API, refetches the updated cart items list from the database, and auto-opens the cart drawer.
+
+handleRemoveFromCart
+The handleRemoveFromCart function deletes a track from the database shopping cart by calling the cart delete API and refetches the updated cart list.
+
+handleAddToWishlist
+The handleAddToWishlist function saves a track to the database wishlist by calling the wishlist API and refetches the updated wishlist items list.
+
+handleRemoveFromWishlist
+The handleRemoveFromWishlist function deletes a track from the database wishlist by calling the wishlist delete API and refetches the updated wishlist items list.
+
+handleConfirmCheckout
+The handleConfirmCheckout function processes checkout for all items in the shopping cart by calling the backend checkout API for each item, refetches purchase history, clears the local cart, closes the checkout modal, and sends success notifications.
+
+---
+#### Navbar Component (Navbar.jsx)
+---
+
+Navbar Rendering
+The Navbar component renders the main header, displaying navigation links to catalog, profile, and admin views, a sign-out button, avatar profile blocks, and toggles for opening/closing the Cart Drawer and Wishlist Drawer along with dynamic count badges.
+
+---
+#### Main View Component (MainView.jsx)
+---
+
+TrackCard
+The TrackCard component renders a single track catalog card, displaying the cover art, absolute wishlist heart toggle buttons, play/pause action overlay controls, genre price tags, and review modal triggers.
+
+handlePlayToggle
+The handlePlayToggle function manages HTML5 audio playback. It initializes the native Audio constructor, sets volumes, updates progress and timing states during playback, handles track switching, and resets states when the audio track ends.
+
+filteredTracks (useMemo)
+The filteredTracks function filters catalog items using a memoized selector, matching the selected category and search input keyword against track titles and artist names while avoiding redundant calculations during playback updates.
+
+Wishlist Drawer Rendering
+The Wishlist Drawer renders a slide-over panel listing wishlisted beats, allowing users to instantly transfer wishlisted items to the cart or delete them.
+
+Cart Drawer Rendering
+The Cart Drawer renders a slide-over panel listing cart items, displaying subtotal price calculations, and providing checkout modal triggers.
+
+---
+#### Profile View Component (ProfileView.jsx)
+---
+
+handleFileChange
+The handleFileChange function reads files from user input, validates that the file is an MP3 audio track, and extracts the audio duration.
+
+handlePasswordUpdate
+The handlePasswordUpdate function submits a password change request to the auth API, validating fields and updating the password.
+
+handleTrackUpload
+The handleTrackUpload function uploads a track by sending track title, genre, price, and object URL file stream to the track upload API, refetching the master catalog tracks, and clearing form fields.
+
+fetchSalesData
+The fetchSalesData function retrieves sales metrics and transaction logs for artists or admins from the sales API, updating statistics.
+
+tabbedPortfolio
+The tabbedPortfolio section renders uploads, purchases, and saved wishlist tabs, displaying lists with add-to-cart and delete actions.
+
+---
+#### Admin View Component (AdminView.jsx)
+---
+
+handleCreateSubmit
+The handleCreateSubmit function creates a new track by posting metadata and placeholder audio object URLs to the track API, refetching inventory, and clearing form inputs.
+
+handleUpdateSubmit
+The handleUpdateSubmit function updates track details by sending title, genre, and price edits to the track update API, refetching catalog, and resetting editing states.
+
+handleDeleteTrack
+The handleDeleteTrack function deletes a track by calling the track delete API, refetching tracks list, and removing deleted tracks from local carts.

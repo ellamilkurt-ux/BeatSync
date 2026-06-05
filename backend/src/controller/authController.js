@@ -33,8 +33,8 @@ const userRegister = async (req, res) => {
             return res.status(400).json({ message: 'This user exist already' });
         }
 
-        const allowedRoles = ['viewer', 'artist', 'admin'];
-        const userRole = role ? role.toLowerCase().trim() : 'viewer';
+        const allowedRoles = ['customer', 'admin'];
+        const userRole = role ? role.toLowerCase().trim() : 'customer';
         if (!allowedRoles.includes(userRole)) {
             return res.status(400).json({ message: 'Invalid role selection.' });
         }

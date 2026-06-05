@@ -8,8 +8,12 @@ export default function Navbar({
   isCartOpen, 
   setIsCartOpen, 
   cartCount,
+  isWishlistOpen,
+  setIsWishlistOpen,
+  wishlistCount,
   userRole,
-  setUserRole
+  setUserRole,
+  currentUser
 }) {
   return (
     <header className="fixed top-0 left-0 w-full h-16 z-40 bg-[#111118]/90 backdrop-blur-md border-b border-zinc-800/60 flex items-center justify-between px-6 select-none">
@@ -50,7 +54,7 @@ export default function Navbar({
             </button>
 
             {/* Admin Dashboard view option - only visible to admin users */}
-            {userRole === 'admin' && (
+            {(userRole?.toLowerCase() === 'admin' || currentUser?.role?.toLowerCase() === 'admin') && (
               <button
                 onClick={() => setView('admin')}
                 className={`text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
@@ -60,6 +64,26 @@ export default function Navbar({
                 Admin
               </button>
             )}
+
+            {/* Wishlist Toggle Button */}
+            <button
+              onClick={() => setIsWishlistOpen(!isWishlistOpen)}
+              className={`relative p-2 rounded-lg hover:bg-[#191924] transition-colors cursor-pointer text-[#8F9CAE] hover:text-[#FFFFFF] flex-shrink-0 ${
+                isWishlistOpen ? 'text-rose-500 bg-[#191924]' : ''
+              }`}
+              aria-label="Toggle wishlist"
+            >
+              {/* Heart SVG */}
+              <svg viewBox="0 0 24 24" width="18" height="18" className={`fill-current ${isWishlistOpen ? 'text-rose-500' : ''}`}>
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+              </svg>
+              {/* Badge */}
+              {wishlistCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-rose-500 text-[#FFFFFF] text-[8px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center border border-[#06060A]">
+                  {wishlistCount}
+                </span>
+              )}
+            </button>
 
             {/* Shopping Cart Toggle Button */}
             <button
@@ -89,7 +113,9 @@ export default function Navbar({
                 </svg>
               </div>
               <div className="hidden sm:flex flex-col text-left justify-center min-w-0">
-                <span className="text-[10px] font-extrabold text-[#FFFFFF] leading-none truncate">producer_one</span>
+                <span className="text-[10px] font-extrabold text-[#FFFFFF] leading-none truncate">
+                  {currentUser ? currentUser.username : 'User'}
+                </span>
                 <button
                   onClick={onSignOut}
                   className="text-[9px] text-[#8F9CAE] hover:text-[#EF4444] transition-colors cursor-pointer text-left font-bold uppercase tracking-wider mt-1"

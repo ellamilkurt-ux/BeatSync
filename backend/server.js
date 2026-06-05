@@ -20,8 +20,17 @@ app.use(cors({
     },
     credentials: true,
 }));
+const fs = require('fs');
+const path = require('path');
+
+// Ensure uploads directories exist
+const uploadsDir = path.join(__dirname, 'uploads');
+fs.mkdirSync(path.join(uploadsDir, 'music'), { recursive: true });
+fs.mkdirSync(path.join(uploadsDir, 'covers'), { recursive: true });
+
 app.use(express.json());
 app.use(cookieParser());
+app.use('/uploads', express.static(uploadsDir));
 
 app.use('/api/auth', authRouter);
 app.use('/api/tracks', trackRouter);

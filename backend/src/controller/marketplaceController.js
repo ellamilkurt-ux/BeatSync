@@ -244,4 +244,78 @@ const processPayment = async (req, res) => {
     }
 };
 
-module.exports = { addToCart, addToWishlist, processPayment };
+const getCart = async (req, res) => {
+    const user_id = req.user.id;
+    try {
+        const result = await pool.query(
+            `SELECT t.id, t.title, t.genre, t.price, t.file_url, t.cover_url, t.artist_id, t.artist
+             FROM interactions i
+             JOIN tracks t ON i.track_id = t.id
+             WHERE i.user_id = $1 AND i.type = 'cart'`,
+            [user_id]
+        );
+        return res.status(200).json({ cart: result.rows });
+    } catch (error) {
+        console.error('Get Cart Error:', error);
+        return res.status(500).json({ message: 'Server error while fetching cart.' });
+    }
+};
+
+const removeFromCart = async (req, res) => {
+    const { trackId } = req.params;
+    const user_id = req.user.id;
+    try {
+        await pool.query(
+            `DELETE FROM interactions
+             WHERE user_id = $1 AND track_id = $2 AND type = 'cart'`,
+            [user_id, trackId]
+        );
+        return res.status(200).json({ message: 'Removed from cart.' });
+    } catch (error) {
+        console.error('Remove from Cart Error:', error);
+        return res.status(500).json({ message: 'Server error while removing from cart.' });
+    }
+};
+
+const getWishlist = async (req, res) => {
+    const user_id = req.user.id;
+    try {
+        const result = await pool.query(
+            `SELECT t.id, t.title, t.genre, t.price, t.file_url, t.cover_url, t.artist_id, t.artist
+             FROM interactions i
+             JOIN tracks t ON i.track_id = t.id
+             WHERE i.user_id = $1 AND i.type = 'wishlist'`,
+            [user_id]
+        );
+        return res.status(200).json({ wishlist: result.rows });
+    } catch (error) {
+        console.error('Get Wishlist Error:', error);
+        return res.status(500).json({ message: 'Server error while fetching wishlist.' });
+    }
+};
+
+const removeFromWishlist = async (req, res) => {
+    const { trackId } = req.params;
+    const user_id = req.user.id;
+    try {
+        await pool.query(
+            `DELETE FROM interactions
+             WHERE user_id = $1 AND track_id = $2 AND type = 'wishlist'`,
+            [user_id, trackId]
+        );
+        return res.status(200).json({ message: 'Removed from wishlist.' });
+    } catch (error) {
+        console.error('Remove from Wishlist Error:', error);
+        return res.status(500).json({ message: 'Server error while removing from wishlist.' });
+    }
+};
+
+module.exports = { 
+    addToCart, 
+    addToWishlist, 
+    processPayment,
+    getCart,
+    removeFromCart,
+    getWishlist,
+    removeFromWishlist
+};
